@@ -40,11 +40,13 @@ const WordPopover = forwardRef((
   // 選択された単語の代替案を取得
   const alternatives = mockAlternatives[word.toLowerCase()] || ['代替案1', '代替案2', '代替案3'];
 
-  const handleSelect = (alternative: string): void => {
+  const handleSelect = (alternative: string, e: React.MouseEvent): void => {
+    e.stopPropagation();
     onSelect(alternative);
   };
 
-  const handleIgnore = (): void => {
+  const handleIgnore = (e: React.MouseEvent): void => {
+    e.stopPropagation();
     onSelect('ignore');
     onIgnore();
   };
@@ -53,6 +55,12 @@ const WordPopover = forwardRef((
     position: 'absolute' as const,
     top: `${position.top}px`,
     left: `${position.left}px`,
+    zIndex: 1000,
+  };
+
+  // stopPropagationを追加して、ポップオーバー内のクリックがドキュメント全体に伝播しないようにする
+  const handlePopoverClick = (e: React.MouseEvent): void => {
+    e.stopPropagation();
   };
 
   return (
@@ -62,14 +70,15 @@ const WordPopover = forwardRef((
       style={style}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
+      onClick={handlePopoverClick}
     >
       <ul>
         {alternatives.map((alt, index) => (
-          <li key={index} onClick={() => handleSelect(alt)}>
+          <li key={index} onClick={(e) => handleSelect(alt, e)}>
             {alt}
           </li>
         ))}
-        <li id="ignore_item" onClick={handleIgnore}>
+        <li id="ignore_item" onClick={(e) => handleIgnore(e)}>
           無視
         </li>
       </ul>

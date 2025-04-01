@@ -24,31 +24,17 @@ const DifficultWordSpan: React.FC<DifficultWordSpanProps> = (props) => {
   const [popoverPosition, setPopoverPosition] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
   const spanRef = useRef<HTMLSpanElement>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
-  const [isOverSpan, setIsOverSpan] = useState<boolean>(false);
   const [isOverPopover, setIsOverPopover] = useState<boolean>(false);
 
-  const handleMouseEnter = (): void => {
-    setIsOverSpan(true);
-
+  const handleClick = (): void => {
     if (spanRef.current) {
       const rect = spanRef.current.getBoundingClientRect();
       setPopoverPosition({
         top: rect.bottom + window.scrollY,
         left: rect.left + window.scrollX
       });
-      setShowPopover(true);
+      setShowPopover(!showPopover); // クリックするたびに表示・非表示を切り替え
     }
-  };
-
-  const handleMouseLeave = (): void => {
-    setIsOverSpan(false);
-
-    // ポップアップメニューにマウスがあれば表示を続ける
-    setTimeout(() => {
-      if (!isOverPopover && !isOverSpan) {
-        setShowPopover(false);
-      }
-    }, 100);
   };
 
   const handlePopoverMouseEnter = (): void => {
@@ -57,28 +43,43 @@ const DifficultWordSpan: React.FC<DifficultWordSpanProps> = (props) => {
 
   const handlePopoverMouseLeave = (): void => {
     setIsOverPopover(false);
+  };
 
-    // スパンにマウスがなければポップアップを閉じる
-    setTimeout(() => {
-      if (!isOverSpan && !isOverPopover) {
+  // ポップオーバー外のクリックを検知してポップオーバーを閉じるためのハンドラ
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        showPopover &&
+        spanRef.current &&
+        popoverRef.current &&
+        !spanRef.current.contains(event.target as Node) &&
+        !popoverRef.current.contains(event.target as Node)
+      ) {
         setShowPopover(false);
       }
-    }, 100);
-  };
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showPopover]);
 
   const handleSelectAlternative = (alternative: string): void => {
     // 代替案を選択した後にポップアップを閉じる
     setShowPopover(false);
-    // 親コンポーネントに選択した代替案を通知
-    props.onSelectAlternative(alternative);
+    // ポップオーバーの状態を更新するために非同期にする
+    setTimeout(() => {
+      // 親コンポーネントに選択した代替案を通知
+      props.onSelectAlternative(alternative);
+    }, 0);
   };
 
   return (
     <span
       ref={spanRef}
       className="highlight"
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
+      onClick={handleClick}
     >
       {props.children}
       {showPopover && (

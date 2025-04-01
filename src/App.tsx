@@ -24,7 +24,7 @@ const App: React.FC = () => {
   const handleUpdate = (): void => {
     // モック: APIコールの代わりに、ハードコードされた単語リストを更新
     console.log('更新ボタンがクリックされました');
-    // 実際のアプリでは、APIを呼び出してhardWordsリストを更新します
+    // 実際のアプリでは、APIを呼び出してhardWordsリストを更新
   };
 
   const handlePreferencesOpen = (): void => setShowPreferences(true);
@@ -42,12 +42,12 @@ const App: React.FC = () => {
 
   const handleAddEasyWord = (word: string): void => {
     console.log(`単語を簡単なリストに追加: ${word}`);
-    // 実際のアプリではAPIを呼び出してユーザー設定を更新します
+    // 実際のアプリではAPIを呼び出してユーザー設定を更新
   };
 
   const handleAddDifficultWord = (word: string): void => {
     console.log(`単語を難しいリストに追加: ${word}`);
-    // 実際のアプリではAPIを呼び出してユーザー設定を更新します
+    // 実際のアプリではAPIを呼び出してユーザー設定を更新
   };
 
   return (
