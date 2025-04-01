@@ -60,6 +60,9 @@
   padding: 10px;
   z-index: 1000;
   min-width: 150px;
+  max-width: 250px;
+  width: auto;
+  text-align: center;
 }
 
 .word-popover ul {

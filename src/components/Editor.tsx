@@ -28,12 +28,12 @@ const DifficultWordSpan: React.FC<DifficultWordSpanProps> = (props) => {
 
   const handleClick = (): void => {
     if (spanRef.current) {
-      const rect = spanRef.current.getBoundingClientRect();
+
       setPopoverPosition({
-        top: rect.bottom + window.scrollY,
-        left: rect.left + window.scrollX
+        top: window.scrollY + 20,
+        left: window.scrollX - 45
       });
-      setShowPopover(!showPopover); // クリックするたびに表示・非表示を切り替え
+      setShowPopover(!showPopover);
     }
   };
 

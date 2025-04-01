@@ -55,7 +55,8 @@ const WordPopover = forwardRef((
     position: 'absolute' as const,
     top: `${position.top}px`,
     left: `${position.left}px`,
-    zIndex: 1000,
+    width: '150px',
+    transform: 'translateX(0)',
   };
 
   // stopPropagationを追加して、ポップオーバー内のクリックがドキュメント全体に伝播しないようにする
@@ -83,6 +84,7 @@ const WordPopover = forwardRef((
         </li>
       </ul>
     </div>
+
   );
 });
 
