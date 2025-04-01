@@ -1,0 +1,103 @@
+.App {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.navbar-brand {
+  font-size: 1.8rem;
+  font-weight: 500;
+}
+
+.navbar-title {
+  margin: 0;
+  padding: 0;
+  color: #2c3e50;
+}
+
+.editor-container {
+  flex: 1;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.editor {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 15px;
+  min-height: 700px;
+  flex: 1;
+  background-color: white;
+  line-height: 1.6;
+}
+
+.editor:focus {
+  outline: none;
+  border-color: #80bdff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.highlight {
+  color: black;
+  background-color: #80bdff;
+  border-radius: 3px;
+  padding: 0 2px;
+  cursor: pointer;
+}
+
+.word-popover {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+  background-color: white;
+  padding: 10px;
+  z-index: 1000;
+  min-width: 150px;
+}
+
+.word-popover ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.word-popover li {
+  padding: 8px 10px;
+  cursor: pointer;
+  border-radius: 4px;
+  margin-bottom: 2px;
+  transition: background-color 0.2s ease;
+}
+
+.word-popover li:hover {
+  background-color: #e9f5ff;
+}
+
+.btn-icon {
+  font-size: 1.2rem;
+  background-color: #f8f9fa;
+  border-color: #f8f9fa;
+  color: #212529;
+  margin-left: 5px;
+}
+
+.btn-icon:hover {
+  background-color: #e2e6ea;
+  border-color: #dae0e5;
+  color: #212529;
+}
+
+.btn-icon>i {
+  font-size: x-large;
+  color: darkslategray;
+}
+
+.modal-header {
+  background-color: #f8f9fa;
+}
+
+#ignore_item {
+  font-style: italic;
+  color: #777;
+}
