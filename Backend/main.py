@@ -58,19 +58,16 @@ class AlternativesResponse(BaseModel):
 
 @app.get("/")
 async def root():
-    return {"message": "Fluent Assist API"}
+    return {"message": "Fluent Assist API", "status": "ok"}
 
 
 @app.get("/alternatives/{word}")
 async def get_alternatives(word: str):
     # 従来のシンプルな代替案API
-    mock_alternatives = nlp_utils.get_mock_alternatives_database()
-
+    # モックデータの代わりに基本的なレスポンスを返す
     return {
         "word": word,
-        "alternatives": mock_alternatives.get(
-            word.lower(), ["代替案1", "代替案2", "代替案3"]
-        ),
+        "alternatives": ["代替案1", "代替案2", "代替案3"],
     }
 
 
@@ -102,24 +99,14 @@ async def get_smart_alternatives(request: AlternativesRequest):
         # MLMによる代替案生成
         if request.method in ["mlm", "both"]:
             mlm_alternatives = nlp_utils.generate_alternatives_with_mlm(
-                request.text, request.target_word
+                request.text, request.target_word, top_k=10
             )
             alternatives.extend(mlm_alternatives)
 
-        # 埋め込みベクトルによる代替案生成
-        if request.method in ["embeddings", "both"]:
-            # モックデータベースから単語候補を取得
-            mock_db = nlp_utils.get_mock_alternatives_database()
-            candidates = mock_db.get(request.target_word.lower(), [])
-
-            # 候補がある場合のみ実行
-            if candidates:
-                embedding_alternatives = (
-                    nlp_utils.generate_alternatives_with_similar_embeddings(
-                        request.text, request.target_word, candidates
-                    )
-                )
-                alternatives.extend(embedding_alternatives)
+        # モックデータベースは使用せず、MLMの結果のみを使用
+        # 代替案がない場合は空のリストを返す
+        if not alternatives:
+            return {"word": request.target_word, "alternatives": []}
 
         # 発音のしやすさでフィルタリング
         filtered_alternatives = nlp_utils.filter_by_pronunciation_ease(alternatives)
@@ -148,26 +135,13 @@ async def analyze_realtime(request: TextAnalysisRequest):
         for word_info in difficult_words:
             word = word_info["word"]
 
-            # MLMによる代替案生成
+            # MLMによる代替案生成（より多くの候補を取得）
             mlm_alternatives = nlp_utils.generate_alternatives_with_mlm(
-                request.text, word
+                request.text, word, top_k=10
             )
 
-            # モックデータベースから単語候補を取得
-            mock_db = nlp_utils.get_mock_alternatives_database()
-            candidates = mock_db.get(word.lower(), [])
-
-            # 候補がある場合は埋め込みベクトルでも生成
-            embedding_alternatives = []
-            if candidates:
-                embedding_alternatives = (
-                    nlp_utils.generate_alternatives_with_similar_embeddings(
-                        request.text, word, candidates
-                    )
-                )
-
-            # 両方の結果を組み合わせ
-            combined_alternatives = mlm_alternatives + embedding_alternatives
+            # モックデータベースは使用せず、MLMの結果のみを使用
+            combined_alternatives = mlm_alternatives
 
             # 発音のしやすさでフィルタリング
             filtered_alternatives = nlp_utils.filter_by_pronunciation_ease(

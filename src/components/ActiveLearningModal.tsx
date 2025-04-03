@@ -1,29 +1,47 @@
-import React from 'react';
-import { Modal, Button, Card } from 'react-bootstrap';
+import React, { useState, useEffect } from 'react';
+import { Modal, Button, Card, Spinner } from 'react-bootstrap';
 
 interface ActiveLearningModalProps {
   show: boolean;
   onHide: () => void;
-  nextWord: string;
-  onAddEasyWord: (word: string) => void;
-  onAddDifficultWord: (word: string) => void;
 }
 
 const ActiveLearningModal: React.FC<ActiveLearningModalProps> = ({
   show,
-  onHide,
-  nextWord,
-  onAddEasyWord,
-  onAddDifficultWord
+  onHide
 }) => {
+  const [nextWord, setNextWord] = useState<string>('');
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  // モーダルが表示されたときに単語をロード
+  useEffect(() => {
+    if (show) {
+      loadNextWord();
+    }
+  }, [show]);
+
+  // 次の単語をロード（実際の実装では、APIから取得）
+  const loadNextWord = () => {
+    setIsLoading(true);
+
+    // 実際のアプリではAPIから取得する代わりに、モックデータを使用
+    const mockWords = ['吃音症', '言語障害', 'スティグマ', '置き換え', '戦略', '職業的', '発表'];
+
+    setTimeout(() => {
+      const randomIndex = Math.floor(Math.random() * mockWords.length);
+      setNextWord(mockWords[randomIndex]);
+      setIsLoading(false);
+    }, 500);
+  };
+
   const handleEasyClick = (): void => {
-    onAddEasyWord(nextWord);
-    onHide();
+    // API呼び出しをして、ユーザーフィードバックを送信（実際の実装）
+    loadNextWord(); // 次の単語をロード
   };
 
   const handleDifficultClick = (): void => {
-    onAddDifficultWord(nextWord);
-    onHide();
+    // API呼び出しをして、ユーザーフィードバックを送信（実際の実装）
+    loadNextWord(); // 次の単語をロード
   };
 
   return (
@@ -33,23 +51,30 @@ const ActiveLearningModal: React.FC<ActiveLearningModalProps> = ({
       </Modal.Header>
       <Modal.Body className="text-center">
         <p>次の単語は発音しやすいですか、難しいですか？</p>
-        <Card className="mb-4 mx-auto" style={{ maxWidth: '300px' }}>
-          <Card.Body>
-            <h2>{nextWord}</h2>
+        <Card className="mb-4 mx-auto" style={{ maxWidth: '300px', minHeight: '100px' }}>
+          <Card.Body className="d-flex justify-content-center align-items-center">
+            {isLoading ? (
+              <Spinner animation="border" role="status">
+                <span className="visually-hidden">読み込み中...</span>
+              </Spinner>
+            ) : (
+              <h2>{nextWord}</h2>
+            )}
           </Card.Body>
         </Card>
         <div className="d-flex justify-content-center">
           <Button
             variant="success"
-            className="mr-3"
+            className="me-3"
             onClick={handleEasyClick}
-            style={{ marginRight: '10px' }}
+            disabled={isLoading}
           >
             簡単
           </Button>
           <Button
             variant="danger"
             onClick={handleDifficultClick}
+            disabled={isLoading}
           >
             難しい
           </Button>

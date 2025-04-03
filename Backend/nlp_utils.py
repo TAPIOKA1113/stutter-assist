@@ -299,17 +299,4 @@ def filter_by_pronunciation_ease(alternatives, difficult_patterns=None):
     return filtered_alts
 
 
-# モックの代替候補データベース
-def get_mock_alternatives_database():
-    return {
-        "吃音症": ["言葉の詰まり", "どもり", "発話障害", "発語障害"],
-        "職業的": ["仕事の", "専門的", "業務上の", "職務的"],
-        "言語障害": ["話し方の問題", "発語障害", "発話困難", "会話障害"],
-        "戦略": ["手法", "方法", "対策", "手段", "やり方"],
-        "置き換え": ["交換", "代替", "入れ替え", "差し替え"],
-        "stuttering": ["どもり", "言葉の詰まり", "吃音", "発話障害"],
-        "presentation": ["発表", "説明", "講演", "スピーチ"],
-        "professional": ["専門的", "職業的", "熟練した", "上級"],
-        "country": ["国", "国家", "地域", "領土", "土地"],
-        "organization": ["組織", "団体", "機関", "協会", "連合"],
-    }
+

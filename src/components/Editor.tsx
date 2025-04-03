@@ -2,6 +2,8 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Editor as DraftEditor, EditorState, ContentState, CompositeDecorator, Modifier, SelectionState, ContentBlock } from 'draft-js';
 import 'draft-js/dist/Draft.css';
 import WordPopover from './WordPopover';
+import { analyzeRealtime } from '../services/apiService';
+import debounce from 'lodash/debounce';
 
 interface DifficultWordSpanProps {
   decoratedText: string;
@@ -9,6 +11,7 @@ interface DifficultWordSpanProps {
   start: number;
   end: number;
   children: React.ReactNode;
+  currentText: string; // 現在のエディタのテキスト全体
   onSelectAlternative: (alternative: string) => void;
 }
 
@@ -16,7 +19,13 @@ interface EditorProps {
   hardWords: string[];
   onAddEasyWord: (word: string) => void;
   onAddDifficultWord: (word: string) => void;
+  threshold?: number; // 難易度の閾値
+  userEasyWords?: string[]; // ユーザーが簡単と設定した単語
+  userDifficultWords?: string[]; // ユーザーが難しいと設定した単語
 }
+
+// デバウンス時間（ミリ秒）
+const DEBOUNCE_TIME = 500;
 
 // 難しい単語をハイライトするスパンコンポーネント
 const DifficultWordSpan: React.FC<DifficultWordSpanProps> = (props) => {
@@ -28,12 +37,15 @@ const DifficultWordSpan: React.FC<DifficultWordSpanProps> = (props) => {
 
   const handleClick = (): void => {
     if (spanRef.current) {
+      const rect = spanRef.current.getBoundingClientRect();
+      // 単語の中央位置を計算
+      const wordCenter = rect.left + (rect.width / 2);
 
       setPopoverPosition({
         top: window.scrollY + 20,
         left: window.scrollX - 45
       });
-      setShowPopover(!showPopover);
+      setShowPopover(!showPopover); // クリックするたびに表示・非表示を切り替え
     }
   };
 
@@ -87,6 +99,7 @@ const DifficultWordSpan: React.FC<DifficultWordSpanProps> = (props) => {
           ref={popoverRef}
           word={props.decoratedText}
           position={popoverPosition}
+          currentText={props.currentText}
           onSelect={handleSelectAlternative}
           onIgnore={() => setShowPopover(false)}
           onMouseEnter={handlePopoverMouseEnter}
@@ -121,7 +134,19 @@ const createDifficultWordStrategy = (hardWords: string[]): DecoratorStrategy => 
   };
 };
 
-const Editor: React.FC<EditorProps> = ({ hardWords, onAddEasyWord, onAddDifficultWord }) => {
+const Editor: React.FC<EditorProps> = ({
+  hardWords: initialHardWords,
+  onAddEasyWord,
+  onAddDifficultWord,
+  threshold = 0.5,
+  userEasyWords = [],
+  userDifficultWords = []
+}) => {
+  // 難しい単語のリスト（APIから取得）
+  const [hardWords, setHardWords] = useState<string[]>(initialHardWords);
+  const [currentText, setCurrentText] = useState<string>('');
+  const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
+
   // 単語を置き換える関数
   const replaceWord = useCallback((oldWord: string, newWord: string, blockKey: string, start: number, end: number): void => {
     // 指定された単語の位置を基にSelectionStateを作成
@@ -170,6 +195,7 @@ const Editor: React.FC<EditorProps> = ({ hardWords, onAddEasyWord, onAddDifficul
         component: (props: any) => (
           <DifficultWordSpan
             {...props}
+            currentText={currentText}
             onSelectAlternative={(alternative: string) => {
               if (alternative === 'ignore') {
                 onAddEasyWord(props.decoratedText);
@@ -182,15 +208,64 @@ const Editor: React.FC<EditorProps> = ({ hardWords, onAddEasyWord, onAddDifficul
         ),
       },
     ]);
-  }, [hardWords, onAddEasyWord, replaceWord]);
+  }, [hardWords, onAddEasyWord, replaceWord, currentText]);
 
   const [editorState, setEditorState] = useState<EditorState>(() => {
     // 初期状態
+    const initialText = '吃音症は何百万人もの人々の個人的および職業的生活に影響を与える言語障害です。スティグマや恥ずかしさから身を守るために、吃音のある人々(PWS)はさまざまな戦略を採用して吃音を隠すことがあります。一般的な戦略の一つは単語の置き換えです。';
+    setCurrentText(initialText);
     return EditorState.createWithContent(
-      ContentState.createFromText('吃音症は何百万人もの人々の個人的および職業的生活に影響を与える言語障害です。スティグマや恥ずかしさから身を守るために、吃音のある人々(PWS)はさまざまな戦略を採用して吃音を隠すことがあります。一般的な戦略の一つは単語の置き換えです。'),
+      ContentState.createFromText(initialText),
       createDecorator()
     );
   });
+
+  // リアルタイム分析のための関数
+  const analyzeText = useCallback(async (text: string) => {
+    if (!text || text.trim() === '' || isAnalyzing) return;
+
+    try {
+      setIsAnalyzing(true);
+      const response = await analyzeRealtime(text, threshold, userDifficultWords);
+
+      // 難しい単語を取得してハードワードリストを更新
+      if (response && response.words && Array.isArray(response.words)) {
+        const difficultWords = response.words.map((item: any) => item.word);
+        setHardWords(difficultWords);
+      }
+    } catch (error) {
+      console.error('テキスト分析エラー:', error);
+    } finally {
+      setIsAnalyzing(false);
+    }
+  }, [threshold, userDifficultWords, isAnalyzing]);
+
+  // デバウンス処理を行ったテキスト分析関数
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const debouncedAnalyzeText = useCallback(
+    debounce((text: string) => {
+      analyzeText(text);
+    }, DEBOUNCE_TIME),
+    [analyzeText]
+  );
+
+  // エディターの内容が変更されたときのハンドラー
+  const handleEditorChange = (newEditorState: EditorState): void => {
+    const newContentState = newEditorState.getCurrentContent();
+    const oldContentState = editorState.getCurrentContent();
+
+    // 内容が変わった場合のみ処理
+    if (newContentState !== oldContentState) {
+      // 新しいテキストを取得
+      const newText = newContentState.getPlainText();
+      setCurrentText(newText);
+
+      // 一定時間後にテキスト分析を実行
+      debouncedAnalyzeText(newText);
+    }
+
+    setEditorState(newEditorState);
+  };
 
   // hardWordsが変更されたときにデコレーターを更新
   useEffect(() => {
@@ -204,7 +279,7 @@ const Editor: React.FC<EditorProps> = ({ hardWords, onAddEasyWord, onAddDifficul
       <div className="editor">
         <DraftEditor
           editorState={editorState}
-          onChange={setEditorState}
+          onChange={handleEditorChange}
           placeholder="入力を始めましょう..."
         />
       </div>

@@ -4,33 +4,44 @@ import { Modal, Button, Form } from 'react-bootstrap';
 interface PreferencesModalProps {
   show: boolean;
   onHide: () => void;
-  onSave: (threshold: number, easyWords: string, difficultWords: string) => void;
-  threshold: number;
-  easyWords: string;
-  difficultWords: string;
+  onSave: (threshold: number, easyWords: string[], difficultWords: string[]) => void;
+  initialThreshold: number;
+  initialEasyWords: string[];
+  initialDifficultWords: string[];
 }
 
 const PreferencesModal: React.FC<PreferencesModalProps> = ({
   show,
   onHide,
   onSave,
-  threshold,
-  easyWords,
-  difficultWords
+  initialThreshold,
+  initialEasyWords,
+  initialDifficultWords
 }) => {
-  const [thresholdValue, setThresholdValue] = useState<number>(threshold);
-  const [easyWordsList, setEasyWordsList] = useState<string>(easyWords);
-  const [difficultWordsList, setDifficultWordsList] = useState<string>(difficultWords);
+  const [thresholdValue, setThresholdValue] = useState<number>(initialThreshold);
+  const [easyWordsList, setEasyWordsList] = useState<string>(initialEasyWords.join(', '));
+  const [difficultWordsList, setDifficultWordsList] = useState<string>(initialDifficultWords.join(', '));
 
   // props が変更されたときに state を更新
   useEffect(() => {
-    setThresholdValue(threshold);
-    setEasyWordsList(easyWords);
-    setDifficultWordsList(difficultWords);
-  }, [threshold, easyWords, difficultWords]);
+    setThresholdValue(initialThreshold);
+    setEasyWordsList(initialEasyWords.join(', '));
+    setDifficultWordsList(initialDifficultWords.join(', '));
+  }, [initialThreshold, initialEasyWords, initialDifficultWords]);
 
   const handleSave = (): void => {
-    onSave(thresholdValue, easyWordsList, difficultWordsList);
+    // カンマ区切りの文字列を配列に変換して保存
+    const easyWordsArray = easyWordsList
+      .split(',')
+      .map(word => word.trim())
+      .filter(word => word.length > 0);
+
+    const difficultWordsArray = difficultWordsList
+      .split(',')
+      .map(word => word.trim())
+      .filter(word => word.length > 0);
+
+    onSave(thresholdValue, easyWordsArray, difficultWordsArray);
   };
 
   const handleThresholdChange = (e: ChangeEvent<HTMLInputElement>): void => {
