@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+      - bert-cache:/root/.cache/huggingface
+    environment:
+      - API_ENV=development
+      - HOST=0.0.0.0
+      - PORT=8000
+      - CORS_ORIGINS=http://localhost:5173
+      - MECABRC=/etc/mecabrc
+      - LANG=C.UTF-8
+      - PYTHONIOENCODING=utf-8
+    restart: unless-stopped
+
+volumes:
+  bert-cache: # BERTモデルのキャッシュを永続化 
