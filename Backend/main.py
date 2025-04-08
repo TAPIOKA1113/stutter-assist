@@ -137,26 +137,13 @@ async def analyze_realtime(request: TextAnalysisRequest):
         )
 
         # 各難しい単語に対して代替案を生成
-        words_with_alternatives = []
+        words = []
 
         for word_info in difficult_words:
             word = word_info["word"]
 
-            # MLMによる代替案生成（より多くの候補を取得）
-            mlm_alternatives = nlp_utils.generate_alternatives_with_mlm(
-                request.text, word, top_k=10
-            )
-
-            # モックデータベースは使用せず、MLMの結果のみを使用
-            combined_alternatives = mlm_alternatives
-
-            # 発音のしやすさでフィルタリング
-            filtered_alternatives = nlp_utils.filter_by_pronunciation_ease(
-                combined_alternatives
-            )
-
             # 結果を追加（文字位置情報を含む）
-            words_with_alternatives.append(
+            words.append(
                 {
                     "word": word,
                     "position": word_info["position"],
@@ -165,7 +152,6 @@ async def analyze_realtime(request: TextAnalysisRequest):
                     "start": word_info.get("start", 0),
                     "end": word_info.get("end", 0),
                     "reading": word_info.get("reading", ""),  # 読み情報も追加
-                    "alternatives": filtered_alternatives[:5],  # 上位5件に制限
                 }
             )
 
@@ -173,9 +159,9 @@ async def analyze_realtime(request: TextAnalysisRequest):
         text_pronunciation = nlp_utils.get_pronunciation(request.text)
 
         return {
-            "text": request.text, #元のテキスト
-            "pronunciation": text_pronunciation,  #読み
-            "words": words_with_alternatives, #難しい単語とその代替案のオブ
+            "text": request.text,  # 元のテキスト
+            "pronunciation": text_pronunciation,  # 読み
+            "words": words,  # 難しい単語とその代替案のオブ
         }
     except Exception as e:
         raise HTTPException(
