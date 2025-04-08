@@ -120,26 +120,13 @@ const createDifficultWordStrategy = (difficultWords: DifficultWordInfo[]): Decor
 
     // 現在のブロックに属するdifficultWords内の単語を取得
     difficultWords.forEach(wordInfo => {
-      const wordText = wordInfo.word;
-      const positions: number[] = [];
-
-      // 形態素解析で見つかったテキスト全体での位置情報がある場合
+      // APIから返された開始・終了位置を直接使用
       if (wordInfo.start !== undefined && wordInfo.end !== undefined) {
-        // ブロック内のテキストの先頭からマッチングを開始
-        let startIndex = 0;
-        while (startIndex < text.length) {
-          const matchIndex = text.indexOf(wordText, startIndex);
-          if (matchIndex === -1) break;
-
-          positions.push(matchIndex);
-          startIndex = matchIndex + wordText.length;
+        // テキスト内の位置が現在のブロック内にある場合のみコールバックを呼び出す
+        const blockStart = text.indexOf(wordInfo.word);
+        if (blockStart !== -1) {
+          callback(blockStart, blockStart + wordInfo.word.length);
         }
-      }
-
-      // 見つかった各位置に対してコールバックを呼び出す
-      for (let pos of positions) {
-        // 単語の開始・終了位置を指定
-        callback(pos, pos + wordText.length);
       }
     });
   };
