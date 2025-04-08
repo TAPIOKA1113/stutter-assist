@@ -85,6 +85,7 @@ Fluent Assistは、吃音を持つ方々のコミュニケーションを支援�
 - npm または yarn
 - Git
 
+<<<<<<< HEAD
 ## セットアップと起動方法
 
 ### 1. リポジトリのクローン
@@ -113,5 +114,19 @@ docker-compose up -d
 ```
 バックエンドAPIは http://localhost:8000 で起動します。
 
+=======
+## インストール方法
+```bash
+# リポジトリのクローン
+git clone [repository-url]
+
+# 依存関係のインストール
+npm install
+
+# 開発サーバーの起動
+npm run dev
+```
+
+>>>>>>> 4ca3b256dc10bc18535e9c9f57543f537903c374
 ## ライセンス
 MIT License
