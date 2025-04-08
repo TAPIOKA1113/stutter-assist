@@ -34,7 +34,6 @@ const DifficultWordSpan: React.FC<DifficultWordSpanProps> = (props) => {
   const [popoverPosition, setPopoverPosition] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
   const spanRef = useRef<HTMLSpanElement>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
-  const [isOverPopover, setIsOverPopover] = useState<boolean>(false);
 
   const handleClick = (): void => {
     if (spanRef.current) {
@@ -46,13 +45,6 @@ const DifficultWordSpan: React.FC<DifficultWordSpanProps> = (props) => {
     }
   };
 
-  const handlePopoverMouseEnter = (): void => {
-    setIsOverPopover(true);
-  };
-
-  const handlePopoverMouseLeave = (): void => {
-    setIsOverPopover(false);
-  };
 
   // ポップオーバー外のクリックを検知してポップオーバーを閉じるためのハンドラ
   useEffect(() => {
@@ -100,8 +92,6 @@ const DifficultWordSpan: React.FC<DifficultWordSpanProps> = (props) => {
           currentText={props.currentText}
           onSelect={handleSelectAlternative}
           onIgnore={() => setShowPopover(false)}
-          onMouseEnter={handlePopoverMouseEnter}
-          onMouseLeave={handlePopoverMouseLeave}
         />
       )}
     </span>
@@ -125,10 +115,8 @@ type DecoratorStrategy = (
 
 // 形態素解析された単語位置に基づいてハイライトするストラテジー
 const createDifficultWordStrategy = (difficultWords: DifficultWordInfo[]): DecoratorStrategy => {
-  return (contentBlock, callback, contentState) => {
-    const blockKey = contentBlock.getKey();
+  return (contentBlock, callback) => {
     const text = contentBlock.getText();
-    const blockStart = 0; // ブロック内の開始位置
 
     // 現在のブロックに属するdifficultWords内の単語を取得
     difficultWords.forEach(wordInfo => {
@@ -158,11 +146,8 @@ const createDifficultWordStrategy = (difficultWords: DifficultWordInfo[]): Decor
 };
 
 const Editor: React.FC<EditorProps> = ({
-  hardWords: initialHardWords,
   onAddEasyWord,
-  onAddDifficultWord,
   threshold = 0.5,
-  userEasyWords = [],
   userDifficultWords = [],
   difficultSounds = []
 }) => {
@@ -170,7 +155,6 @@ const Editor: React.FC<EditorProps> = ({
   const [hardWords, setHardWords] = useState<DifficultWordInfo[]>([]);
   const [currentText, setCurrentText] = useState<string>('');
   const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
-  const [morphemes, setMorphemes] = useState<any[]>([]);
   // テキストの読み情報を保持する状態を追加
   const [textPronunciation, setTextPronunciation] = useState<string>('');
   const [textPronunciationWithUnknowns, setTextPronunciationWithUnknowns] = useState<string>('');
@@ -277,7 +261,6 @@ const Editor: React.FC<EditorProps> = ({
 
       // 形態素解析結果の保存
       if (response && response.morphemes && Array.isArray(response.morphemes)) {
-        setMorphemes(response.morphemes);
 
         // 「吃音」を含む形態素を特に確認
         const kitsuonMorphemes = response.morphemes.filter((m: any) => m.surface.includes('吃音'));
