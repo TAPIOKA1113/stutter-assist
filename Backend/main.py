@@ -91,7 +91,7 @@ async def analyze_text(request: TextAnalysisRequest):
             status_code=500, detail=f"テキスト解析中にエラーが発生しました: {str(e)}"
         )
 
-
+# ポップオーバークリック時の代替案生成
 @app.post("/smart-alternatives", response_model=AlternativesResponse)
 async def get_smart_alternatives(request: AlternativesRequest):
     """
@@ -121,7 +121,7 @@ async def get_smart_alternatives(request: AlternativesRequest):
             status_code=500, detail=f"代替案生成中にエラーが発生しました: {str(e)}"
         )
 
-
+#　テキストが編集されたときに呼び出されるエンドポイント
 @app.post("/analyze-realtime")
 async def analyze_realtime(request: TextAnalysisRequest):
     """

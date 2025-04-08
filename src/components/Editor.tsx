@@ -13,6 +13,7 @@ interface DifficultWordSpanProps {
   children: React.ReactNode;
   currentText: string; // 現在のエディタのテキスト全体
   onSelectAlternative: (alternative: string) => void;
+  contentState: ContentState;
 }
 
 interface EditorProps {
@@ -27,6 +28,22 @@ interface EditorProps {
 
 // デバウンス時間（ミリ秒）
 const DEBOUNCE_TIME = 500;
+
+const getAbsoluteOffset = (contentState: ContentState, blockKey: string, offsetInBlock: number): number => {
+  const blocks = contentState.getBlocksAsArray();
+  let absoluteOffset = 0;
+
+  for (const block of blocks) {
+    if (block.getKey() === blockKey) {
+      // 目的のブロックに到達したら、そこまでの累積オフセットに
+      // ブロック内のオフセットを加算して返す
+      return absoluteOffset + offsetInBlock;
+    }
+    // 各ブロックの長さを加算（改行文字は含めない）
+    absoluteOffset += block.getLength() + 1;
+  }
+  return absoluteOffset;
+};
 
 // 難しい単語をハイライトするスパンコンポーネント
 const DifficultWordSpan: React.FC<DifficultWordSpanProps> = (props) => {
@@ -76,6 +93,13 @@ const DifficultWordSpan: React.FC<DifficultWordSpanProps> = (props) => {
     }, 0);
   };
 
+  // contentStateはデコレーターから提供されるpropsに含まれます
+  const contentState = props.contentState;
+
+  // 文書全体での絶対位置を計算
+  const absoluteStart = getAbsoluteOffset(contentState, props.blockKey, props.start);
+  const absoluteEnd = getAbsoluteOffset(contentState, props.blockKey, props.end);
+
   return (
     <span
       ref={spanRef}
@@ -90,6 +114,10 @@ const DifficultWordSpan: React.FC<DifficultWordSpanProps> = (props) => {
           word={props.decoratedText}
           position={popoverPosition}
           currentText={props.currentText}
+          textPosition={{
+            start: absoluteStart,
+            end: absoluteEnd
+          }}
           onSelect={handleSelectAlternative}
           onIgnore={() => setShowPopover(false)}
         />

@@ -8,6 +8,10 @@ interface WordPopoverProps {
     left: number;
   };
   currentText: string; // 現在のエディタのテキスト全体
+  textPosition: {  // 追加：テキスト内での単語の位置
+    start: number;
+    end: number;
+  };
   onSelect: (alternative: string) => void;
   onIgnore: () => void;
   onMouseEnter?: (e: MouseEvent<HTMLDivElement>) => void;
@@ -15,43 +19,63 @@ interface WordPopoverProps {
 }
 
 const WordPopover = forwardRef((
-  { word, position, currentText, onSelect, onIgnore, onMouseEnter, onMouseLeave }: WordPopoverProps,
+  { word, position, currentText, textPosition, onSelect, onIgnore, onMouseEnter, onMouseLeave }: WordPopoverProps,
   ref: Ref<HTMLDivElement>
 ) => {
   const [alternatives, setAlternatives] = useState<string[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-
-  // ホバー状態の管理
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+
+  // コンテキストウィンドウを取得する関数
+  const getContextWindow = (text: string, start: number, end: number, windowSize: number) => {
+    const beforeStart = Math.max(0, start - windowSize);
+    const afterEnd = Math.min(text.length, start + windowSize);
+
+    const beforeContext = text.slice(beforeStart, start).trim();
+    const afterContext = text.slice(end, afterEnd).trim();
+
+    return { beforeContext, afterContext };
+  };
 
   // 代替案をAPIから取得
   useEffect(() => {
     const fetchAlternatives = async () => {
       try {
         setLoading(true);
-        // スマート代替案APIを呼び出し
-        const result = await getSmartAlternatives(currentText, word);
+
+        // コンテキストウィンドウを取得
+        const { beforeContext, afterContext } = getContextWindow(
+          currentText,
+          textPosition.start,
+          textPosition.end,
+          350  // 前後200文字ずつ取得
+        );
+
+        const contextText = beforeContext + word + afterContext;
+        console.log('contextText', contextText);
+
+        // 代替案APIを呼び出し（コンテキスト情報を含める）
+        const result = await getSmartAlternatives(
+          contextText,
+          word,
+        );
 
         if (result && result.alternatives && Array.isArray(result.alternatives)) {
-          // 代替案の配列を設定
           setAlternatives(result.alternatives);
         } else {
-          // フォールバック：空の配列
           setAlternatives([]);
         }
       } catch (err) {
         console.error('代替案の取得に失敗しました', err);
         setError('代替案を取得できませんでした');
-        // エラー時には基本的な代替案を表示
-        setAlternatives(['代替案1', '代替案2', '代替案3']);
       } finally {
         setLoading(false);
       }
     };
 
     fetchAlternatives();
-  }, [word, currentText]);
+  }, [word, currentText, textPosition]);
 
   const handleSelect = (alternative: string, e: React.MouseEvent): void => {
     e.stopPropagation();
