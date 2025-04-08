@@ -16,7 +16,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # グローバル変数としてモデルとトークナイザ、形態素解析器を初期化
-bert_model_name = "cl-tohoku/bert-base-japanese-v2"
+bert_model_name = "cl-tohoku/bert-base-japanese-v3"
 
 
 # MeCab形態素解析器の初期化
