@@ -1,54 +1,117 @@
-# React + TypeScript + Vite
+# Fluent Assist - 吃音者向けの文書作成支援ツール
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## プロジェクト概要
+Fluent Assistは、吃音を持つ方々のコミュニケーションを支援するWebアプリケーションです。リアルタイムでの音声認識とテキスト変換、カスタマイズ可能なUI、そしてユーザーフレンドリーなインターフェースを提供します。
 
-Currently, two official plugins are available:
+## 技術スタック
+### フロントエンド
+- **React 19**: 最新のReactバージョンを採用し、パフォーマンスと開発効率を最適化
+- **TypeScript**: 型安全性を確保し、コードの品質と保守性を向上
+- **Vite**: 高速なビルドツールを採用し、開発体験を改善
+- **React Bootstrap**: レスポンシブでアクセシブルなUIコンポーネント
+- **Draft.js**: リッチテキストエディタの実装
+- **Font Awesome**: アイコンライブラリ
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### バックエンド
+- **Node.js**: サーバーサイドの実装
+- **Express**: RESTful APIの構築
+- **WebSocket**: リアルタイム通信の実装
 
-## Expanding the ESLint configuration
+## 主な機能
+1. リアルタイム音声認識
+2. テキスト変換と編集
+3. カスタマイズ可能なUI
+4. ユーザー設定の保存
+5. レスポンシブデザイン
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## 技術的な特徴と工夫
+1. **モダンな技術スタック**
+   - React 19の最新機能を活用
+   - TypeScriptによる型安全性の確保
+   - Viteによる高速な開発環境
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+2. **パフォーマンス最適化**
+   - コンポーネントの最適化
+   - レンダリングの効率化
+   - バンドルサイズの最適化
+
+3. **アクセシビリティ**
+   - WCAG 2.1準拠のUI実装
+   - キーボードナビゲーションのサポート
+   - スクリーンリーダー対応
+
+4. **ユーザビリティ**
+   - 直感的なUI/UX設計
+   - カスタマイズ可能な設定
+   - レスポンシブデザイン
+
+## 開発で学んだこと
+1. **フロントエンド開発**
+   - React Hooksの活用
+   - コンポーネント設計
+   - 状態管理の最適化
+
+2. **バックエンド開発**
+   - RESTful API設計
+   - WebSocket実装
+   - データベース設計
+
+3. **プロジェクト管理**
+   - Gitによるバージョン管理
+   - コードレビュープロセス
+   - テスト駆動開発
+
+## 今後の展望
+1. 機械学習を活用した音声認識精度の向上
+2. 多言語対応の実装
+3. モバイルアプリケーションの開発
+4. ユーザーコミュニティの構築
+
+## 使用技術の詳細
+- **フロントエンド**
+  - React 19.0.0
+  - TypeScript 5.7.2
+  - Vite 6.2.0
+  - React Bootstrap 2.10.9
+  - Draft.js 0.11.7
+
+- **バックエンド**
+  - Node.js
+  - Express
+  - WebSocket
+
+## 開発環境
+- Node.js v18以上
+- npm または yarn
+- Git
+
+## セットアップと起動方法
+
+### 1. リポジトリのクローン
+```bash
+git clone [repository-url]
+cd fluent-assist
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### 2. フロントエンド環境のセットアップ
+```bash
+# 依存関係のインストール
+npm install
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
+# 開発サーバーの起動
+npm run dev
 ```
+フロントエンドは http://localhost:5173 で起動します。
+
+### 3. バックエンド環境のセットアップ
+```bash
+# Backendディレクトリに移動
+cd Backend
+
+# Dockerを使用してバックエンドサーバーを起動
+docker-compose up -d
+```
+バックエンドAPIは http://localhost:8000 で起動します。
+
+## ライセンス
+MIT License
