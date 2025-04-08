@@ -1,16 +1,15 @@
 import React from 'react';
 import { Navbar, Button, Badge, Nav } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faGear, faBars, faFlask } from '@fortawesome/free-solid-svg-icons';
+import { faGear, faFlask } from '@fortawesome/free-solid-svg-icons';
 import { Link } from 'react-router-dom';
 
 interface NavBarProps {
   onPreferencesClick: () => void;
-  onActiveLearningClick: () => void;
   apiConnected: boolean;
 }
 
-const NavBar: React.FC<NavBarProps> = ({ onPreferencesClick, onActiveLearningClick, apiConnected }) => {
+const NavBar: React.FC<NavBarProps> = ({ onPreferencesClick, apiConnected }) => {
   return (
     <Navbar bg="light" expand="lg">
       <Navbar.Brand as={Link} to="/">
@@ -30,21 +29,14 @@ const NavBar: React.FC<NavBarProps> = ({ onPreferencesClick, onActiveLearningCli
         >
           {apiConnected ? "接続中" : "未接続"}
         </Badge>
-        <Button
-          variant="light"
-          className="btn-icon"
-          onClick={onActiveLearningClick}
-          title="モデル調整"
-        >
-          <FontAwesomeIcon icon={faGear} />
-        </Button>
+
         <Button
           variant="light"
           className="btn-icon"
           onClick={onPreferencesClick}
           title="設定"
         >
-          <FontAwesomeIcon icon={faBars} />
+          <FontAwesomeIcon icon={faGear} />
         </Button>
       </div>
     </Navbar>

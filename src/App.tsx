@@ -5,13 +5,11 @@ import './App.css';
 import NavBar from './components/NavBar';
 import Editor from './components/Editor';
 import PreferencesModal from './components/PreferencesModal';
-import ActiveLearningModal from './components/ActiveLearningModal';
 import { checkApiStatus } from './services/apiService';
 
 function App() {
   // モーダル表示状態の管理
   const [showPreferences, setShowPreferences] = useState<boolean>(false);
-  const [showActiveLearning, setShowActiveLearning] = useState<boolean>(false);
 
   // APIの状態管理
   const [apiConnected, setApiConnected] = useState<boolean>(false);
@@ -83,7 +81,6 @@ function App() {
     <div className="App">
       <NavBar
         onPreferencesClick={() => setShowPreferences(true)}
-        onActiveLearningClick={() => setShowActiveLearning(true)}
         apiConnected={apiConnected}
       />
       <Container fluid>
@@ -152,11 +149,6 @@ function App() {
         initialDifficultWords={difficultWords}
       />
 
-      {/* アクティブラーニングモーダル */}
-      <ActiveLearningModal
-        show={showActiveLearning}
-        onHide={() => setShowActiveLearning(false)}
-      />
     </div>
   );
 }
