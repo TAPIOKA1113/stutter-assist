@@ -49,7 +49,7 @@ const WordPopover = forwardRef((
           currentText,
           textPosition.start,
           textPosition.end,
-          350  // 前後200文字ずつ取得
+          250 // 前後200文字ずつ取得
         );
 
         const contextText = beforeContext + word + afterContext;
@@ -57,7 +57,7 @@ const WordPopover = forwardRef((
 
         // 代替案APIを呼び出し（コンテキスト情報を含める）
         const result = await getSmartAlternatives(
-          contextText,
+          contextText,  // 一部テキストを送信することでトークン制限を回避
           word,
         );
 
@@ -88,63 +88,50 @@ const WordPopover = forwardRef((
     onIgnore();
   };
 
-  const style = {
-    position: 'absolute' as const,
-    top: `${position.top}px`,
-    left: `${position.left}px`,
-    width: '150px',
-    transform: 'translateX(0)',
-  };
-
-  // stopPropagationを追加して、ポップオーバー内のクリックがドキュメント全体に伝播しないようにする
-  const handlePopoverClick = (e: React.MouseEvent): void => {
-    e.stopPropagation();
-  };
-
   return (
     <div
       ref={ref}
-      className="word-popover"
-      style={style}
+      className="absolute z-50 w-48 bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden"
+      style={{
+        top: `${position.top}px`,
+        left: `${position.left}px`,
+      }}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
-      onClick={handlePopoverClick}
+      onClick={(e) => e.stopPropagation()}
     >
       {loading ? (
-        <div className="loading-text" style={{ padding: '10px', textAlign: 'center' }}>読み込み中...</div>
+        <div className="p-3 text-center text-gray-600">
+          読み込み中...
+        </div>
       ) : error ? (
-        <div className="error-text" style={{ padding: '10px', textAlign: 'center', color: 'red' }}>{error}</div>
+        <div className="p-3 text-center text-red-600">
+          {error}
+        </div>
       ) : alternatives.length === 0 ? (
-        <div className="no-alternatives" style={{ padding: '10px', textAlign: 'center' }}>代替案がありません</div>
+        <div className="p-3 text-center text-gray-600">
+          代替案がありません
+        </div>
       ) : (
-        <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+        <ul className="divide-y divide-gray-100">
           {alternatives.map((alt, index) => (
             <li
               key={index}
               onClick={(e) => handleSelect(alt, e)}
               onMouseEnter={() => setHoveredIndex(index)}
               onMouseLeave={() => setHoveredIndex(null)}
-              style={{
-                padding: '8px 12px',
-                cursor: 'pointer',
-                backgroundColor: hoveredIndex === index ? '#f0f0f0' : 'transparent'
-              }}
+              className={`px-4 py-2 cursor-pointer text-sm transition-colors duration-150
+                ${hoveredIndex === index ? 'bg-gray-50' : 'hover:bg-gray-50'}`}
             >
               {alt}
             </li>
           ))}
           <li
-            id="ignore_item"
-            onClick={(e) => handleIgnore(e)}
+            onClick={handleIgnore}
             onMouseEnter={() => setHoveredIndex(-1)}
             onMouseLeave={() => setHoveredIndex(null)}
-            style={{
-              padding: '8px 12px',
-              cursor: 'pointer',
-              borderTop: '1px solid #eee',
-              color: '#999',
-              backgroundColor: hoveredIndex === -1 ? '#f0f0f0' : 'transparent'
-            }}
+            className={`px-4 py-2 cursor-pointer text-sm text-gray-500 transition-colors duration-150
+              ${hoveredIndex === -1 ? 'bg-gray-50' : 'hover:bg-gray-50'}`}
           >
             無視
           </li>

@@ -5,7 +5,7 @@ import './App.css';
 import NavBar from './components/NavBar';
 import Editor from './components/Editor';
 // import PreferencesModal from './components/PreferencesModal';
-import PreferencesModal2 from './components/PreferencesModal2';
+import PreferencesModal from './components/PreferencesModal';
 import { checkApiStatus } from './services/apiService';
 
 function App() {
@@ -81,7 +81,7 @@ function App() {
       </Container>
 
       {/* 設定モーダル */}
-      <PreferencesModal2
+      <PreferencesModal
         show={showPreferences}
         onHide={() => setShowPreferences(false)}
         onSave={(easyPronunciations, difficultPronunciations) => {
