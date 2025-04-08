@@ -12,13 +12,13 @@ const apiClient = axios.create({
 });
 
 // 難しい単語を取得するAPI
-export const analyzeDifficultWords = async (text: string, difficultyThreshold: number = 0.5, userDifficultWords: string[] = [], difficultSounds: string[] = []) => {
+export const analyzeDifficultWords = async (text: string, difficultyThreshold: number = 0.5, userDifficultWords: string[] = [], difficultPronunciations: string[] = []) => {
   try {
     const response = await apiClient.post('/analyze', {
       text,
       difficulty_threshold: difficultyThreshold,
       user_difficult_words: userDifficultWords,
-      difficult_sounds: difficultSounds
+      difficult_sounds: difficultPronunciations
     });
     return response.data;
   } catch (error) {
@@ -28,13 +28,12 @@ export const analyzeDifficultWords = async (text: string, difficultyThreshold: n
 };
 
 // リアルタイム分析API（難しい単語と代替案を一度に取得）
-export const analyzeRealtime = async (text: string, difficultyThreshold: number = 0.5, userDifficultWords: string[] = [], difficultSounds: string[] = []) => {
+export const analyzeRealtime = async (text: string, easyPronunciations: string[] = [], difficultPronunciations: string[] = []) => {
   try {
     const response = await apiClient.post('/analyze-realtime', {
       text,
-      difficulty_threshold: difficultyThreshold,
-      user_difficult_words: userDifficultWords,
-      difficult_sounds: difficultSounds
+      easy_sounds: easyPronunciations,
+      difficult_sounds: difficultPronunciations
     });
     console.log('リアルタイム分析結果:', response.data); // デバッグ用ログ
     return response.data;

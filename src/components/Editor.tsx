@@ -19,10 +19,10 @@ interface EditorProps {
   hardWords: string[];
   onAddEasyWord: (word: string) => void;
   onAddDifficultWord: (word: string) => void;
-  threshold?: number; // 難易度の閾値
   userEasyWords?: string[]; // ユーザーが簡単と設定した単語
   userDifficultWords?: string[]; // ユーザーが難しいと設定した単語
-  difficultSounds?: string[]; // ユーザーが苦手な音のリスト
+  easyPronunciations?: string[]; // ユーザーが簡単な音のリスト
+  difficultPronunciations?: string[]; // ユーザーが苦手な音のリスト
 }
 
 // デバウンス時間（ミリ秒）
@@ -147,9 +147,9 @@ const createDifficultWordStrategy = (difficultWords: DifficultWordInfo[]): Decor
 
 const Editor: React.FC<EditorProps> = ({
   onAddEasyWord,
-  threshold = 0.5,
   userDifficultWords = [],
-  difficultSounds = []
+  easyPronunciations = [],
+  difficultPronunciations = []
 }) => {
   // 難しい単語のリスト（APIから取得）
   const [hardWords, setHardWords] = useState<DifficultWordInfo[]>([]);
@@ -241,8 +241,8 @@ const Editor: React.FC<EditorProps> = ({
       setIsAnalyzing(true);
 
       // Propsから渡された苦手な音のリストを使用
-      console.log('苦手な音リスト:', difficultSounds);
-      const response = await analyzeRealtime(text, threshold, userDifficultWords, difficultSounds);
+      console.log('苦手な音リスト:', difficultPronunciations);
+      const response = await analyzeRealtime(text, easyPronunciations, difficultPronunciations);
 
       // APIレスポンスの詳細をデバッグ表示
       console.log('APIレスポンス全体:', response);
@@ -298,7 +298,7 @@ const Editor: React.FC<EditorProps> = ({
     } finally {
       setIsAnalyzing(false);
     }
-  }, [threshold, userDifficultWords, isAnalyzing, difficultSounds]);
+  }, [userDifficultWords, isAnalyzing, difficultPronunciations]);
 
   // デバウンス処理を行ったテキスト分析関数
   // eslint-disable-next-line react-hooks/exhaustive-deps

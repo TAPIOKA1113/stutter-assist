@@ -14,13 +14,6 @@ interface WordPopoverProps {
   onMouseLeave?: (e: MouseEvent<HTMLDivElement>) => void;
 }
 
-interface Alternative {
-  word: string;
-  score: number;
-  original_score: number;
-  pronunciation_difficulty: number;
-}
-
 const WordPopover = forwardRef((
   { word, position, currentText, onSelect, onIgnore, onMouseEnter, onMouseLeave }: WordPopoverProps,
   ref: Ref<HTMLDivElement>

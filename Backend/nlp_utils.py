@@ -95,48 +95,60 @@ def analyze_morphology(text):
         logger.warning("MeCab形態素解析器が無効なため、形態素解析をスキップします")
         return []
 
-    # デバッグ用: 生のMeCab出力を確認
     raw_mecab_output = mecab_tagger.parse(text)
     logger.info(f"MeCab生出力: {raw_mecab_output}")
 
     words = []
+    temp_words = []  # 一時的な形態素情報を保持
     node = mecab_tagger.parseToNode(text)
     position = 0
-    char_position = 0  # テキスト内の文字位置を追跡
+    char_position = 0
 
     while node:
-        if node.surface:  # 表層形が存在する場合のみ処理
-            # 単語と品詞情報を取得
+        if node.surface:
             surface = node.surface
             feature = node.feature.split(",")
-
             pos = feature[0] if len(feature) > 0 else "UNK"
+            reading = feature[6] if len(feature) >= 8 else ""
 
-            # 読み情報を取得（利用可能な場合）
-            reading = ""
-            if len(feature) >= 8:
-                reading = feature[6]
+            current_word = {
+                "surface": surface,
+                "pos": pos,
+                "position": position,
+                "start": text.find(surface, char_position),
+                "end": text.find(surface, char_position) + len(surface),
+                "reading": reading,
+                "feature": feature,
+            }
 
-            # テキスト内の正確な位置情報を追加
-            start_pos = text.find(surface, char_position)
-            if start_pos != -1:
-                end_pos = start_pos + len(surface)
-                char_position = end_pos  # 次の検索開始位置を更新
-
-                words.append(
-                    {
-                        "surface": surface,
-                        "pos": pos,
-                        "position": position,
-                        "start": start_pos,
-                        "end": end_pos,
-                        "reading": reading,  # 読み情報を追加
-                        "feature": feature,  # デバッグ用に素性情報全体も追加
-                    }
-                )
+            # 接尾辞との結合処理
+            if pos == "接尾辞" and temp_words:
+                # 直前の単語と結合
+                prev_word = temp_words[-1]
+                combined_word = {
+                    "surface": prev_word["surface"] + surface,
+                    "pos": prev_word["pos"],  # 元の品詞を保持
+                    "position": prev_word["position"],
+                    "start": prev_word["start"],
+                    "end": current_word["end"],
+                    "reading": (
+                        (prev_word["reading"] + reading)
+                        if prev_word["reading"] and reading
+                        else ""
+                    ),
+                    "feature": prev_word["feature"],  # 元の品詞情報を保持
+                }
+                temp_words[-1] = combined_word
+            else:
+                temp_words.append(current_word)
                 position += 1
 
+            char_position = current_word["end"]
+
         node = node.next
+
+    # 結合された形態素情報を最終的なリストに追加
+    words = temp_words
 
     return words
 
