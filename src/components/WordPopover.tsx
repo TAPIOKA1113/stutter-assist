@@ -7,8 +7,8 @@ interface WordPopoverProps {
     top: number;
     left: number;
   };
-  currentText: string; // 現在のエディタのテキスト全体
-  textPosition: {  // 追加：テキスト内での単語の位置
+  currentText: string;
+  textPosition: {
     start: number;
     end: number;
   };
@@ -27,40 +27,28 @@ const WordPopover = forwardRef((
   const [error, setError] = useState<string | null>(null);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
-  // コンテキストウィンドウを取得する関数
   const getContextWindow = (text: string, start: number, end: number, windowSize: number) => {
     const beforeStart = Math.max(0, start - windowSize);
     const afterEnd = Math.min(text.length, start + windowSize);
-
     const beforeContext = text.slice(beforeStart, start).trim();
     const afterContext = text.slice(end, afterEnd).trim();
-
     return { beforeContext, afterContext };
   };
 
-  // 代替案をAPIから取得
   useEffect(() => {
     const fetchAlternatives = async () => {
       try {
         setLoading(true);
-
-        // コンテキストウィンドウを取得
         const { beforeContext, afterContext } = getContextWindow(
           currentText,
           textPosition.start,
           textPosition.end,
-          250 // 前後200文字ずつ取得
+          250
         );
-
         const contextText = beforeContext + word + afterContext;
-        console.log('contextText', contextText);
-
-        // 代替案APIを呼び出し（コンテキスト情報を含める）
-        const result = await getSmartAlternatives(
-          contextText,  // 一部テキストを送信することでトークン制限を回避
-          word,
-        );
-
+        console.log('contextText', beforeContext, word, afterContext);
+        const result = await getSmartAlternatives(contextText, word);
+        
         if (result && result.alternatives && Array.isArray(result.alternatives)) {
           setAlternatives(result.alternatives);
         } else {
@@ -91,7 +79,7 @@ const WordPopover = forwardRef((
   return (
     <div
       ref={ref}
-      className="absolute z-50 w-48 bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden"
+      className="absolute z-50 w-44 bg-white rounded-md shadow-lg border border-gray-100 overflow-hidden"
       style={{
         top: `${position.top}px`,
         left: `${position.left}px`,
@@ -101,44 +89,53 @@ const WordPopover = forwardRef((
       onClick={(e) => e.stopPropagation()}
     >
       {loading ? (
-        <div className="p-3 text-center text-gray-600">
-          読み込み中...
+        <div className="py-2 px-3 text-center text-gray-500 text-xs">
+          <div className="flex justify-center items-center space-x-1">
+            <div className="animate-pulse h-1.5 w-1.5 bg-gray-400 rounded-full"></div>
+            <div className="animate-pulse h-1.5 w-1.5 bg-gray-400 rounded-full animation-delay-200"></div>
+            <div className="animate-pulse h-1.5 w-1.5 bg-gray-400 rounded-full animation-delay-400"></div>
+          </div>
         </div>
       ) : error ? (
-        <div className="p-3 text-center text-red-600">
+        <div className="py-2 px-3 text-center text-red-500 text-xs">
           {error}
         </div>
       ) : alternatives.length === 0 ? (
-        <div className="p-3 text-center text-gray-600">
+        <div className="py-2 px-3 text-center text-gray-500 text-xs">
           代替案がありません
         </div>
       ) : (
-        <ul className="divide-y divide-gray-100">
-          {alternatives.map((alt, index) => (
+        <div className="max-h-48 overflow-y-auto">
+          <ul className="divide-y divide-gray-50">
+            {alternatives.map((alt, index) => (
+              <li
+                key={index}
+                onClick={(e) => handleSelect(alt, e)}
+                onMouseEnter={() => setHoveredIndex(index)}
+                onMouseLeave={() => setHoveredIndex(null)}
+                className={`px-3 py-1.5 text-xs cursor-pointer transition-colors duration-150
+                  ${hoveredIndex === index ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-50'}`}
+              >
+                {alt}
+              </li>
+            ))}
             <li
-              key={index}
-              onClick={(e) => handleSelect(alt, e)}
-              onMouseEnter={() => setHoveredIndex(index)}
+              onClick={handleIgnore}
+              onMouseEnter={() => setHoveredIndex(-1)}
               onMouseLeave={() => setHoveredIndex(null)}
-              className={`px-4 py-2 cursor-pointer text-sm transition-colors duration-150
-                ${hoveredIndex === index ? 'bg-gray-50' : 'hover:bg-gray-50'}`}
+              className={`px-3 py-1.5 text-xs cursor-pointer transition-colors duration-150
+                ${hoveredIndex === -1 ? 'bg-gray-50 text-gray-500' : 'text-gray-400 hover:bg-gray-50 hover:text-gray-500'}`}
             >
-              {alt}
+              無視
             </li>
-          ))}
-          <li
-            onClick={handleIgnore}
-            onMouseEnter={() => setHoveredIndex(-1)}
-            onMouseLeave={() => setHoveredIndex(null)}
-            className={`px-4 py-2 cursor-pointer text-sm text-gray-500 transition-colors duration-150
-              ${hoveredIndex === -1 ? 'bg-gray-50' : 'hover:bg-gray-50'}`}
-          >
-            無視
-          </li>
-        </ul>
+          </ul>
+        </div>
       )}
     </div>
   );
 });
 
-export default WordPopover; 
+// React 19 will deprecate forwardRef, but we're using it for now
+WordPopover.displayName = 'WordPopover';
+
+export default WordPopover;

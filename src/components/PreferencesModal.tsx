@@ -16,8 +16,19 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
   initialEasyPronunciations,
   initialDifficultPronunciations
 }) => {
+  // モックの初期難しい音を設定
+  const initialMockDifficult = [
+    'か', 'く', 'け', 'こ',
+    'さ', 'し', 'そ',
+    'て', 'と',
+    'は', 'ひ', 'ほ'
+  ];
+
   const [easyPronunciations, setEasyPronunciations] = useState<string[]>(initialEasyPronunciations);
-  const [difficultPronunciations, setDifficultPronunciations] = useState<string[]>(initialDifficultPronunciations);
+  const [difficultPronunciations, setDifficultPronunciations] = useState<string[]>(
+    // 初期値として実際の値とモックの値をマージ
+    [...new Set([...initialDifficultPronunciations, ...initialMockDifficult])]
+  );
   const [activeTab, setActiveTab] = useState<'seion' | 'dakuon' | 'handakuon'>('seion');
 
   // 50音図のデータ（縦書き用に再構成、重複を除去）
@@ -46,21 +57,17 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
     ['ぽ']
   ];
 
-  const togglePronunciation = (sound: string, type: 'easy' | 'difficult') => {
-    if (type === 'easy') {
-      if (easyPronunciations.includes(sound)) {
-        setEasyPronunciations(prev => prev.filter(s => s !== sound));
-      } else {
-        setEasyPronunciations(prev => [...prev, sound]);
-        setDifficultPronunciations(prev => prev.filter(s => s !== sound));
-      }
+  const togglePronunciation = (sound: string) => {
+    if (difficultPronunciations.includes(sound)) {
+      // 難しい音（赤）から言いやすい音（緑）に変更
+      setDifficultPronunciations(prev => prev.filter(s => s !== sound));
+      setEasyPronunciations(prev => [...prev, sound]);
+    } else if (easyPronunciations.includes(sound)) {
+      // 言いやすい音（緑）から未設定（グレー）に変更
+      setEasyPronunciations(prev => prev.filter(s => s !== sound));
     } else {
-      if (difficultPronunciations.includes(sound)) {
-        setDifficultPronunciations(prev => prev.filter(s => s !== sound));
-      } else {
-        setDifficultPronunciations(prev => [...prev, sound]);
-        setEasyPronunciations(prev => prev.filter(s => s !== sound));
-      }
+      // 未設定（グレー）から難しい音（赤）に変更
+      setDifficultPronunciations(prev => [...prev, sound]);
     }
   };
 
@@ -78,8 +85,8 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
               <Button
                 key={`${rowIndex}-${columnIndex}`}
                 variant={
-                  easyPronunciations.includes(row[columnIndex]) ? 'success' :
-                    difficultPronunciations.includes(row[columnIndex]) ? 'danger' :
+                  difficultPronunciations.includes(row[columnIndex]) ? 'danger' :
+                    easyPronunciations.includes(row[columnIndex]) ? 'success' :
                       'light'
                 }
                 style={{
@@ -89,15 +96,7 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
                   padding: '0',
                   margin: '0'
                 }}
-                onClick={() => {
-                  if (easyPronunciations.includes(row[columnIndex])) {
-                    togglePronunciation(row[columnIndex], 'difficult');
-                  } else if (difficultPronunciations.includes(row[columnIndex])) {
-                    togglePronunciation(row[columnIndex], 'easy');
-                  } else {
-                    togglePronunciation(row[columnIndex], 'easy');
-                  }
-                }}
+                onClick={() => togglePronunciation(row[columnIndex])}
               >
                 {row[columnIndex]}
               </Button>

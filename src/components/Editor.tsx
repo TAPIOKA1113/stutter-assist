@@ -170,11 +170,8 @@ const Editor: React.FC<EditorProps> = ({
   const [hardWords, setHardWords] = useState<DifficultWordInfo[]>([]);
   const [currentText, setCurrentText] = useState<string>('');
   const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
-  // テキストの読み情報を保持する状態を追加
-  const [textPronunciation, setTextPronunciation] = useState<string>('');
-  const [textPronunciationWithUnknowns, setTextPronunciationWithUnknowns] = useState<string>('');
-  const [showDetailedReading, setShowDetailedReading] = useState<boolean>(false);
-
+  
+  
   // 単語を置き換える関数
   const replaceWord = useCallback((oldWord: string, newWord: string, blockKey: string, start: number, end: number): void => {
     // 指定された単語の位置を基にSelectionStateを作成
@@ -211,6 +208,7 @@ const Editor: React.FC<EditorProps> = ({
       const stateWithSelection = EditorState.forceSelection(stateWithDecorator, newSelection);
 
       console.log(`${oldWord} を ${newWord} に置き換えました`);
+      setCurrentText(stateWithSelection.getCurrentContent().getPlainText());
       return stateWithSelection;
     });
   }, []);
@@ -262,17 +260,6 @@ const Editor: React.FC<EditorProps> = ({
       // APIレスポンスの詳細をデバッグ表示
       console.log('APIレスポンス全体:', response);
 
-      // テキストの読みを保存
-      if (response && response.pronunciation) {
-        setTextPronunciation(response.pronunciation);
-        console.log('テキスト全体の読み (標準):', response.pronunciation);
-      }
-
-      // 不明文字を含む読みも保存
-      if (response && response.pronunciation_with_unknowns) {
-        setTextPronunciationWithUnknowns(response.pronunciation_with_unknowns);
-        console.log('テキスト全体の読み (不明文字を含む):', response.pronunciation_with_unknowns);
-      }
 
       // 形態素解析結果の保存
       if (response && response.morphemes && Array.isArray(response.morphemes)) {
@@ -356,51 +343,7 @@ const Editor: React.FC<EditorProps> = ({
         {isAnalyzing && <span style={{ color: '#888', fontSize: '14px', marginLeft: '10px' }}>分析中...</span>}
       </div>
 
-      {/* テキストの読み（発音）を表示するUI */}
-      {textPronunciation && (
-        <div className="text-pronunciation" style={{
-          marginBottom: '15px',
-          padding: '10px',
-          backgroundColor: '#f5f5f5',
-          borderRadius: '5px',
-          fontSize: '14px',
-          lineHeight: '1.5'
-        }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}>
-            <div style={{ fontWeight: 'bold' }}>テキストの読み：</div>
-            <button
-              onClick={() => setShowDetailedReading(!showDetailedReading)}
-              style={{
-                border: 'none',
-                background: '#e0e0e0',
-                borderRadius: '3px',
-                padding: '3px 8px',
-                fontSize: '12px',
-                cursor: 'pointer'
-              }}
-            >
-              {showDetailedReading ? '標準表示' : '詳細表示'}
-            </button>
-          </div>
-
-          {/* 元のテキストと読みを比較して表示 */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-            <div style={{ padding: '5px', backgroundColor: '#fff', borderRadius: '3px' }}>
-              <span style={{ color: '#666', fontSize: '12px' }}>元のテキスト：</span>
-              <br />
-              {currentText}
-            </div>
-
-            <div style={{ padding: '5px', backgroundColor: '#e6f7ff', borderRadius: '3px' }}>
-              <span style={{ color: '#666', fontSize: '12px' }}>読み（カタカナ）：</span>
-              <br />
-              {showDetailedReading ? textPronunciationWithUnknowns : textPronunciation}
-            </div>
-          </div>
-        </div>
-      )}
-
-      <div className="editor-wrapper" style={{ border: '1px solid #ccc', padding: '10px', minHeight: '150px' }}>
+      <div className="editor-wrapper " style={{ border: '1px solid #ccc', padding: '10px', minHeight: '150px', minWidth: '150%' }}>
         <DraftEditor
           editorState={editorState}
           onChange={handleEditorChange}
